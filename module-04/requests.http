@@ -1,0 +1,92 @@
+### Module 4 — REST API + Zod Validation
+
+@base = http://localhost:3000
+
+# ─── LIST ────────────────────────────────────────────────
+
+### GET all posts
+GET {{base}}/posts
+
+### With pagination
+GET {{base}}/posts?page=1&limit=1
+
+### Filter by published
+GET {{base}}/posts?published=true
+
+### Invalid query param (limit must be a number)
+GET {{base}}/posts?limit=abc
+
+
+# ─── READ ────────────────────────────────────────────────
+
+### GET by ID
+GET {{base}}/posts/1
+
+### Not found
+GET {{base}}/posts/999
+
+### Invalid ID
+GET {{base}}/posts/abc
+
+
+# ─── CREATE ──────────────────────────────────────────────
+
+### Valid post
+POST {{base}}/posts
+Content-Type: application/json
+
+{
+  "title": "My New Post",
+  "body": "This is the body of my new post, it has enough content.",
+  "tags": ["learning", "express"],
+  "published": true
+}
+
+### Missing required fields → 422 with field-level errors
+POST {{base}}/posts
+Content-Type: application/json
+
+{
+  "title": "Hi"
+}
+
+### Too many tags → 422
+POST {{base}}/posts
+Content-Type: application/json
+
+{
+  "title": "Tag overload",
+  "body": "This post has way too many tags attached to it.",
+  "tags": ["a", "b", "c", "d", "e", "f"]
+}
+
+
+# ─── UPDATE ──────────────────────────────────────────────
+
+### PUT (full replacement) — all fields required
+PUT {{base}}/posts/1
+Content-Type: application/json
+
+{
+  "title": "Updated Title via PUT",
+  "body": "This replaces the entire post, all fields required.",
+  "tags": ["updated"],
+  "published": true
+}
+
+### PATCH (partial update) — only send what you want to change
+PATCH {{base}}/posts/1
+Content-Type: application/json
+
+{
+  "published": true
+}
+
+
+# ─── DELETE ──────────────────────────────────────────────
+
+### Delete a post (returns 204, no body)
+DELETE {{base}}/posts/2
+
+### Try to delete it again → 404
+DELETE {{base}}/posts/2
