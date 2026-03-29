@@ -1,0 +1,66 @@
+### Module 7 — Sessions & Cookies
+### NOTE: VS Code REST Client handles cookies automatically between requests.
+### With curl, use: curl -c cookies.txt (save) and curl -b cookies.txt (send)
+
+@base = http://localhost:3000
+
+# ─── Try protected route without a session ───────────────
+
+### Should return 401
+GET {{base}}/dashboard
+
+
+# ─── Login ───────────────────────────────────────────────
+
+### Login — observe the Set-Cookie header in the response!
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "james@example.com", "password": "password123" }
+
+###
+# curl -v -c cookies.txt -X POST http://localhost:3000/auth/login \
+#   -H "Content-Type: application/json" \
+#   -d '{"email":"james@example.com","password":"password123"}'
+# Watch for: Set-Cookie: connect.sid=s%3A...
+
+
+# ─── Authenticated requests ──────────────────────────────
+
+### Get current user (session cookie sent automatically by REST Client)
+GET {{base}}/auth/me
+
+### Protected dashboard
+GET {{base}}/dashboard
+
+### Increment login count — stored in session
+PUT {{base}}/auth/me/increment
+###
+PUT {{base}}/auth/me/increment
+### Get me again — loginCount should have increased
+GET {{base}}/auth/me
+
+###
+# curl -b cookies.txt http://localhost:3000/auth/me
+# curl -b cookies.txt http://localhost:3000/dashboard
+
+
+# ─── Wrong credentials ────────────────────────────────────
+
+### Wrong password — generic error (no enumeration)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "james@example.com", "password": "wrong" }
+
+
+# ─── Logout ──────────────────────────────────────────────
+
+### Logout — clears cookie
+POST {{base}}/auth/logout
+
+### Now /me should return 401 again
+GET {{base}}/auth/me
+
+###
+# curl -v -c cookies.txt -b cookies.txt -X POST http://localhost:3000/auth/logout

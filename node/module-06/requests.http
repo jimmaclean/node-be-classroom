@@ -1,0 +1,94 @@
+### Module 6 — Sequelize + PostgreSQL
+### Start the DB first: docker compose up -d
+
+@base = http://localhost:3000
+
+# ─── USERS ───────────────────────────────────────────────
+
+### Create a user
+POST {{base}}/users
+Content-Type: application/json
+
+{ "name": "James", "email": "james@example.com" }
+
+### Create another user
+POST {{base}}/users
+Content-Type: application/json
+
+{ "name": "Alice", "email": "alice@example.com" }
+
+### Duplicate email → 409 Conflict
+POST {{base}}/users
+Content-Type: application/json
+
+{ "name": "James2", "email": "james@example.com" }
+
+### List all users
+GET {{base}}/users
+
+### Get user with their posts (note the JOIN in the SQL log)
+GET {{base}}/users/1
+
+
+# ─── POSTS ───────────────────────────────────────────────
+
+### Create a post (use a userId from above)
+POST {{base}}/posts
+Content-Type: application/json
+
+{
+  "title": "My First DB Post",
+  "body": "This is stored in PostgreSQL now, not memory.",
+  "tags": ["database", "sequelize"],
+  "published": true,
+  "userId": 1
+}
+
+### Create another post
+POST {{base}}/posts
+Content-Type: application/json
+
+{
+  "title": "Draft Post",
+  "body": "Not published yet, working on this one.",
+  "tags": ["wip"],
+  "published": false,
+  "userId": 1
+}
+
+### List all posts (watch the SQL in the terminal)
+GET {{base}}/posts
+
+### Filter by published
+GET {{base}}/posts?published=true
+
+### Paginate
+GET {{base}}/posts?page=1&limit=1
+
+### Get one post (includes user info via JOIN)
+GET {{base}}/posts/1
+
+### Search
+GET {{base}}/posts/search?q=database
+
+### Partial update (PATCH)
+PATCH {{base}}/posts/1
+Content-Type: application/json
+
+{ "published": true }
+
+### Delete
+DELETE {{base}}/posts/2
+
+# ─── TRANSACTION ────────────────────────────────────────
+
+### Create user + post atomically
+POST {{base}}/posts/with-user
+Content-Type: application/json
+
+{
+  "userName": "Bob",
+  "userEmail": "bob@example.com",
+  "title": "Bob's First Post",
+  "body": "Created together with my user in a single transaction."
+}

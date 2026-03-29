@@ -1,0 +1,47 @@
+### Module 9 — Security Essentials
+
+@base = http://localhost:3000
+
+# ─── Inspect security headers ─────────────────────────────
+
+### GET with -I to see headers only (use curl for this one)
+GET {{base}}/headers-check
+
+###
+# curl -I http://localhost:3000/headers-check
+# Look for: X-Content-Type-Options, X-Frame-Options, Content-Security-Policy
+
+
+# ─── Rate limiting ────────────────────────────────────────
+
+### Hit this repeatedly — watch RateLimit-Remaining count down
+GET {{base}}/rate-limit-check
+
+### Auth limit (10 per 15min)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "test@example.com", "password": "test" }
+
+
+# ─── Mass assignment protection ───────────────────────────
+
+### Try to inject isAdmin — it should be stripped by Zod
+POST {{base}}/users
+Content-Type: application/json
+
+{
+  "name": "James",
+  "email": "james@example.com",
+  "isAdmin": true,
+  "role": "superuser"
+}
+
+### Validation error
+POST {{base}}/users
+Content-Type: application/json
+
+{
+  "name": "J",
+  "email": "not-an-email"
+}

@@ -1,0 +1,69 @@
+### Module 5 — Caching Headers
+### Use curl -v or -I to see response headers. VS Code REST Client also shows headers.
+
+@base = http://localhost:3000
+
+# ─── SPRINT: Cache-Control ───────────────────────────────
+
+### Public cache (60s) — check Cache-Control header
+GET {{base}}/public-data
+
+### Private cache — CDN won't cache this
+GET {{base}}/private-data
+
+### No store — nothing caches this
+GET {{base}}/sensitive-data
+
+###
+# curl -I http://localhost:3000/public-data
+# curl -I http://localhost:3000/private-data
+# curl -I http://localhost:3000/sensitive-data
+
+
+# ─── DEEP DIVE: ETag ─────────────────────────────────────
+
+### Step 1: First request — observe the ETag header in the response
+GET {{base}}/posts
+
+### Step 2: Copy the ETag value from Step 1, paste it below.
+###         If content hasn't changed → 304 Not Modified (no body!)
+GET {{base}}/posts
+If-None-Match: "PASTE_ETAG_HERE"
+
+###
+# Step 1 - get the etag:
+# curl -v http://localhost:3000/posts 2>&1 | grep -i etag
+#
+# Step 2 - use it:
+# curl -v http://localhost:3000/posts -H 'If-None-Match: "the-etag-value"'
+# You should see: < HTTP/1.1 304 Not Modified
+
+
+# ─── DEEP DIVE: Last-Modified ────────────────────────────
+
+### Step 1: First request — observe Last-Modified header
+GET {{base}}/posts/by-date
+
+### Step 2: Send the date back — should get 304
+GET {{base}}/posts/by-date
+If-Modified-Since: Mon, 15 Jan 2024 10:00:00 GMT
+
+### Step 3: Send an older date — should get 200 (content is newer)
+GET {{base}}/posts/by-date
+If-Modified-Since: Mon, 01 Jan 2024 00:00:00 GMT
+
+###
+# curl -v http://localhost:3000/posts/by-date 2>&1 | grep -i "last-modified"
+# curl -v http://localhost:3000/posts/by-date \
+#   -H "If-Modified-Since: Mon, 15 Jan 2024 10:00:00 GMT"
+
+
+# ─── DEEP DIVE: stale-while-revalidate ──────────────────
+
+### Check the Cache-Control header
+GET {{base}}/news
+
+
+# ─── No headers (dangerous default) ────────────────────
+
+GET {{base}}/no-headers

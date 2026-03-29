@@ -1,0 +1,82 @@
+### Module 2 — Express Fundamentals
+### Install the VS Code "REST Client" extension to run these in-editor
+### Or copy the curl equivalents into your terminal
+
+@base = http://localhost:3000
+
+# ─── SPRINT ──────────────────────────────────────────────
+
+### Hello world
+GET {{base}}/hello
+
+###
+# curl http://localhost:3000/hello
+
+
+# ─── DEEP DIVE: req object ───────────────────────────────
+
+### Route params + query string
+GET {{base}}/echo/james?color=blue&size=large
+
+###
+# curl "http://localhost:3000/echo/james?color=blue&size=large"
+
+
+### POST with a JSON body — notice how body appears in response
+POST {{base}}/echo
+Content-Type: application/json
+
+{
+  "name": "James",
+  "job": "developer"
+}
+
+###
+# curl -X POST http://localhost:3000/echo \
+#   -H "Content-Type: application/json" \
+#   -d '{"name":"James","job":"developer"}'
+
+
+### Custom headers — add your own and see them reflected
+GET {{base}}/echo/test
+X-My-Header: hello-world
+Authorization: Bearer fake-token-for-learning
+
+###
+# curl http://localhost:3000/echo/test \
+#   -H "X-My-Header: hello-world" \
+#   -H "Authorization: Bearer fake-token-for-learning"
+
+
+# ─── DEEP DIVE: Controlling responses ────────────────────
+
+### Different status codes
+GET {{base}}/status-demo?code=201
+###
+GET {{base}}/status-demo?code=400
+###
+GET {{base}}/status-demo?code=404
+
+###
+# curl -v "http://localhost:3000/status-demo?code=404"
+
+
+### HTML response — observe the Content-Type header
+GET {{base}}/html-demo
+
+###
+# curl -v http://localhost:3000/html-demo
+
+
+### Plain text response
+GET {{base}}/text-demo
+
+###
+# curl -v http://localhost:3000/text-demo
+
+
+### Custom response headers — use -v to see them
+GET {{base}}/headers-demo
+
+###
+# curl -v http://localhost:3000/headers-demo

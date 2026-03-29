@@ -1,0 +1,33 @@
+### Module 3 — Middleware
+
+@base = http://localhost:3000
+
+# ─── Basic echo (with timer + logger middleware running) ─
+
+### GET with route param
+GET {{base}}/echo/james?color=blue
+
+### POST with body
+POST {{base}}/echo
+Content-Type: application/json
+
+{ "message": "hello middleware" }
+
+# ─── Error handling ──────────────────────────────────────
+
+### Triggers AppError (name too short) → 400
+GET {{base}}/echo/a
+
+### Triggers unhandled Error → 500
+GET {{base}}/crash
+
+### Async error → 503
+GET {{base}}/echo/async-error/yes
+
+### Async success
+GET {{base}}/echo/async-error/no
+
+# ─── 404 handler ────────────────────────────────────────
+
+### Route that doesn't exist → 404
+GET {{base}}/does-not-exist

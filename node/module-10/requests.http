@@ -1,0 +1,175 @@
+### Module 10 — Reads Bookmarks API (Capstone)
+### Work through in order. Copy tokens after login.
+
+@base = http://localhost:3000
+@accessToken = PASTE_ACCESS_TOKEN_HERE
+@refreshToken = PASTE_REFRESH_TOKEN_HERE
+
+# ─── Health check ─────────────────────────────────────────
+
+GET {{base}}/health
+
+
+# ─── Auth ─────────────────────────────────────────────────
+
+### Register — copy accessToken and refreshToken from response
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "James",
+  "email": "james@example.com",
+  "password": "supersecret123"
+}
+
+### Login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "james@example.com",
+  "password": "supersecret123"
+}
+
+### Who am I?
+GET {{base}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+
+# ─── Create bookmarks ─────────────────────────────────────
+
+### Create a bookmark with tags
+POST {{base}}/bookmarks
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "TypeScript Handbook",
+  "url": "https://www.typescriptlang.org/docs/handbook/",
+  "notes": "The official TypeScript documentation. Read chapters 1-5 first.",
+  "tags": ["typescript", "documentation", "programming"]
+}
+
+### Another bookmark
+POST {{base}}/bookmarks
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Express.js Guide",
+  "url": "https://expressjs.com/en/guide/routing.html",
+  "notes": "Routing and middleware reference",
+  "favourite": true,
+  "tags": ["express", "nodejs", "backend"]
+}
+
+### One more
+POST {{base}}/bookmarks
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Sequelize Docs",
+  "url": "https://sequelize.org/docs/v6/",
+  "tags": ["database", "orm", "nodejs"]
+}
+
+### Invalid URL → 422
+POST {{base}}/bookmarks
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Bad bookmark",
+  "url": "not-a-url"
+}
+
+
+# ─── List and filter ──────────────────────────────────────
+
+### List all (note Cache-Control: private, max-age=30)
+GET {{base}}/bookmarks
+Authorization: Bearer {{accessToken}}
+
+### Filter by tag
+GET {{base}}/bookmarks?tag=typescript
+Authorization: Bearer {{accessToken}}
+
+### Filter by favourite
+GET {{base}}/bookmarks?favourite=true
+Authorization: Bearer {{accessToken}}
+
+### Search
+GET {{base}}/bookmarks?q=database
+Authorization: Bearer {{accessToken}}
+
+### Paginate
+GET {{base}}/bookmarks?page=1&limit=2
+Authorization: Bearer {{accessToken}}
+
+### All tags for this user
+GET {{base}}/bookmarks/meta/tags
+Authorization: Bearer {{accessToken}}
+
+
+# ─── Read one ─────────────────────────────────────────────
+
+### Get by ID (change ID as needed)
+GET {{base}}/bookmarks/1
+Authorization: Bearer {{accessToken}}
+
+### Someone else's bookmark → 404 (authorization check)
+GET {{base}}/bookmarks/999
+Authorization: Bearer {{accessToken}}
+
+
+# ─── Update ───────────────────────────────────────────────
+
+### Mark as favourite
+PATCH {{base}}/bookmarks/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "favourite": true }
+
+### Update tags (replaces all tags)
+PATCH {{base}}/bookmarks/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "tags": ["typescript", "must-read"] }
+
+### Update notes
+PATCH {{base}}/bookmarks/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "notes": "Updated notes — finished reading chapters 1-3" }
+
+
+# ─── Delete ───────────────────────────────────────────────
+
+### Delete a bookmark (returns 204)
+DELETE {{base}}/bookmarks/3
+Authorization: Bearer {{accessToken}}
+
+
+# ─── Token refresh ────────────────────────────────────────
+
+### Get a new access token using the refresh token
+POST {{base}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{refreshToken}}" }
+
+
+# ─── Security demos ───────────────────────────────────────
+
+### No token → 401
+GET {{base}}/bookmarks
+
+### Rate limit: run the auth endpoint 11 times to trigger it
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "wrong@example.com", "password": "wrong" }

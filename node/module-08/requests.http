@@ -1,0 +1,104 @@
+### Module 8 — Authentication (bcrypt + JWT)
+### Run requests in order — each step uses the token from the previous one.
+
+@base = http://localhost:3000
+
+# Store tokens from responses here for reuse
+@accessToken = PASTE_ACCESS_TOKEN_HERE
+@refreshToken = PASTE_REFRESH_TOKEN_HERE
+
+# ─── Register ─────────────────────────────────────────────
+
+### Register a new user — copy accessToken and refreshToken from response
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "James",
+  "email": "james@example.com",
+  "password": "supersecret123"
+}
+
+### Duplicate email → 409
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "James2",
+  "email": "james@example.com",
+  "password": "supersecret123"
+}
+
+### Weak password → 422
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "James",
+  "email": "james2@example.com",
+  "password": "short"
+}
+
+
+# ─── Login ────────────────────────────────────────────────
+
+### Login — copy the tokens
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "james@example.com",
+  "password": "supersecret123"
+}
+
+### Wrong password — same error as wrong email (no enumeration)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "james@example.com",
+  "password": "wrongpassword"
+}
+
+
+# ─── Use Access Token ─────────────────────────────────────
+
+### Update @accessToken above with the value from login, then:
+GET {{base}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+### Protected resource
+GET {{base}}/protected
+Authorization: Bearer {{accessToken}}
+
+### Decode the JWT (no verification — just base64 decode)
+GET {{base}}/auth/decode
+Authorization: Bearer {{accessToken}}
+
+### No token → 401
+GET {{base}}/protected
+
+
+# ─── Refresh Token ────────────────────────────────────────
+
+### Exchange refresh token for new access token
+POST {{base}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{refreshToken}}" }
+
+### Use the revoked refresh token again → 401
+POST {{base}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{refreshToken}}" }
+
+
+# ─── Logout ──────────────────────────────────────────────
+
+### Logout (revokes refresh token)
+POST {{base}}/auth/logout
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{ "refreshToken": "{{refreshToken}}" }
